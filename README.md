@@ -1,10 +1,10 @@
 # happy-notebook
-<h2>一款日记本，用angularJs和ionic制作，可以用Cordova打包为安卓、ios应用。</h2>
+<h2>一款日记本，用angularJs和ionic制作，可以用Cordova打包为安卓、ios应用。<a href="http://ccyblog-sources.stor.sinaapp.com/ionicNoteBook.apk">点击下载</a></h2>
 <p>说明：</p>
 <h2>命令行安装</h2>
 <p>
 首先您需要安装 <a href="https://nodejs.org/en/">Node.js</a>，接下来的安装中需要使用到其 NPM 工具，更多 NPM 介绍可以查看<a href="https://www.npmjs.com/">NPM 使用介绍</a>。</p>
-<p>然后通过<a href="https://npmjs.org/package/ionic">命令行工具</a>安装最新版本的 cordova 和 ionic 。通过参考<a href="http://cordova.apache.org/docs/en/latest/guide/platforms/android/index.html">Android</a> 和 <a href="http://cordova.apache.org/docs/en/latest/guide/platforms/ios/index.html">iOS</a> 官方文档来安装。
+<p>然后通过<a href="https://npmjs.org/package/ionic" target="_blank">命令行工具</a>安装最新版本的 cordova 和 ionic 。通过参考<a href="http://cordova.apache.org/docs/en/latest/guide/platforms/android/index.html" target="_blank">Android</a> 和 <a href="http://cordova.apache.org/docs/en/latest/guide/platforms/ios/index.html" target="_blank">iOS</a> 官方文档来安装。
 </p>
 <p>Window 和 Linux 上打开命令行工具执行以下命令：</p>
 <pre>
@@ -61,7 +61,7 @@ $ ionic emulate ios
 </blockquote>
 <hr>
 <h3>插件安装</h3>
-<p>如何安装cordova插件请参考<a href="http://cordova.apache.org/plugins/faq.html">cordova插件安装帮助</a></p>
+<p>如何安装cordova插件请参考<a href="http://cordova.apache.org/plugins/faq.html" target="_blank">cordova插件安装帮助</a></p>
 安卓平台上需要安装的插件如下
 <br />
 <img src="plugins.png" />

@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html ng-app="starter">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+    <title>日记本</title>
+
+    <link href="lib/ionic/css/ionic.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+
+    <!-- IF using Sass (run gulp sass first), then uncomment below and remove the CSS includes above
+    <link href="css/ionic.app.css" rel="stylesheet">
+    -->
+
+    <!-- ionic/angularjs js -->
+    <script src="lib/ionic/js/ionic.bundle.js"></script>
+
+    <!-- cordova script (this will be a 404 during development) -->
+    <script src="lib/ngCordova/dist/ng-cordova.js"></script>
+    <script src="cordova.js"></script>
+
+    <!-- your app's js -->
+    <script src="js/app.js"></script>
+    <script src="js/controllers.js"></script>
+    <script src="js/services.js"></script>
+  </head>
+  <body>
+<ion-nav-view></ion-nav-view>
+<!--侧栏菜单-->
+<script id="event-menu.html" type="text/ng-template">
+    <ion-side-menus>
+        <ion-side-menu-content>
+            <ion-nav-bar class="bar-{{currentTheme}}">
+            <ion-nav-back-button></ion-nav-back-button>
+        </ion-nav-bar>
+
+            <ion-tabs class="tabs-icon-top {{hideTabs}}" ng-class={"tabs-{{currentTheme}}":true}>
+
+                <ion-tab title="主页" icon="ion-home" href="#/event/home">
+                    <ion-nav-view name="menuContent"></ion-nav-view>
+                </ion-tab>
+
+                <ion-tab title="收藏" icon="ion-star" href="#/event/favorite">
+                    <ion-nav-view name="favoriteContent"></ion-nav-view>
+                </ion-tab>
+
+                <ion-tab title="设置" icon="ion-gear-b" href="#/event/contact">
+                    <ion-nav-view name="settingsContent"></ion-nav-view>
+                </ion-tab>
+
+            </ion-tabs>
+        </ion-side-menu-content>
+
+        <ion-side-menu side="left">
+            <ion-content>
+                <ion-list show-delete="isShownData.showDelete">
+                    <a class="item item-avatar" href="#/event/details" menu-toggle="left">
+                        <img src="img/person.png">
+                        <h2>点击登录</h2>
+                        <p>云笔记功能即将上线！</p>
+                    </a>
+                    <div class="item item-divider item-icon-right">
+                        <span>文件夹</span>
+                    </div>
+                    <ion-item ng-repeat="folder in folders" folder="folder" ng-click="selectFolder(folder, $index)"
+                              ng-class="{active: activeFolder == folder}">
+                        {{folder.title}} <span>({{folder.notes.length}})</span>
+                        <ion-delete-button class="ion-minus-circled" ng-click="onFolderDelete(folder)">
+                        </ion-delete-button>
+                    </ion-item>
+                </ion-list>
+                <ion-footer-bar  ng-class={"bar-{{currentTheme}}":true} style="position: fixed;bottom: 0px;">
+                    <div class="buttons">
+                        <button class="button button-icon icon ion-ios-minus-outline"
+                                ng-click="isShownData.showDelete = !isShownData.showDelete;"></button>
+                    </div>
+                    <div class="title">文件夹操作</div>
+                    <div class="buttons">
+                        <button class="button button-icon ion-ios-plus-outline"
+                                ng-click=" isShownData.showDelete = false;newFolder();">
+                        </button>
+                    </div>
+                </ion-footer-bar>
+                </div>
+
+            </ion-content>
+
+        </ion-side-menu>
+    </ion-side-menus>
+</script>
+
+<!--当前日记列表-->
+<script id="home.html" type="text/ng-template">
+    <ion-view title="{{activeFolder.title}}">
+        <ion-nav-buttons side="left">
+            <button class="button button-icon ion-navicon" menu-toggle="left"></button>
+            </button>
+        </ion-nav-buttons>
+        <ion-nav-buttons side="right">
+            <button class="button button-icon" ng-click="toggleSearchOne()">
+                <i class="icon ion-ios-search"></i>
+            </button>
+            <button class="button button-icon" ng-click="newNote()">
+                <i class="icon ion-compose"></i>
+            </button>
+        </ion-nav-buttons>
+        <ion-content>
+            <ion-refresher pulling-text="下拉刷新" on-refresh="doRefresh()"></ion-refresher>
+            <ion-list>
+                <div class=" item item-input item-input-inset" ng-show="isShownData.showSearchOne">
+                    <label class="item-input-wrapper">
+                        <i class="icon ion-ios-search placeholder-icon"></i>
+                        <input type="text" placeholder="搜索 文章内容/标题/日期" ng-model="query">
+                    </label>
+
+                </div>
+                <ion-item ng-repeat="note in activeFolder.notes | filter:query" note="note" ng-click="toPreviewNote(note,$index)">
+                    <h2>{{note.title}}</h2>
+                    <p>{{note.createTime}}</p>
+                    <p ng-show="showNotePreview.showPre=='isShow'">{{note.content}}</p>
+                    <ion-option-button class="button-assertive" ng-click="onNoteDelete(note)">删除</ion-option-button>
+                    <ion-option-button class="button-dark" ng-click="addFavorites(note)">收藏</ion-option-button>
+                </ion-item>
+            </ion-list>
+        </ion-content>
+    </ion-view>
+</script>
+
+<!--设置页面-->
+<script id="contact.html" type="text/ng-template">
+    <ion-view title="设置">
+        <ion-content>
+            <div class="list">
+                <a class="item item-icon-right" ng-class="{true: 'active', false: 'inactive'}[showSettingTheme]"ng-click="showSettingTheme=!showSettingTheme" ng-init="showSettingTheme = false">
+                    选择主题
+                    <i class="icon" ng-class="{true: 'ion-ios-arrow-down', false: 'ion-ios-arrow-right'}[showSettingTheme]"></i>
+                </a>
+                <ion-radio ng-repeat="item in themeList"
+                           class="{{item.theme}}"
+                           ng-value="item.theme"
+                           ng-model="currentTheme"
+                           ng-change="changeTheme(item)"
+                            ng-show="showSettingTheme">
+                    {{item.text}}
+                </ion-radio>
+
+
+                <div class="item item-divider"></div>
+                <a href="#/event/contact/help" class="item item-icon-right">
+                    <p>使用帮助</p>
+                    <i class="icon ion-ios-arrow-right"></i>
+                </a>
+
+                <a class="item item-icon-right" ng-href="mailto:chenchangyu1994@outlook.com?subject='开心云笔记反馈建议'">
+                    <p>反馈建议</p>
+                    <i class="icon ion-ios-arrow-right"></i>
+                </a>
+                <a class="item item-icon-right" ng-click="shareNoteBook()">
+                    <p>分享此软件</p>
+                    <i class="icon ion-ios-arrow-right"></i>
+                </a>
+                 <a href="javascript:void(0)" class="item item-icon-right">
+                    <p>版本更新<small class="pull-right">&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp已是最新版本 V 1.0.1</small></p>
+                </a>
+                <div class="item item-divider"></div>
+                <ion-toggle toggle-class="toggle-{{currentTheme}}"
+                            ng-model="showNotePreview.showPre"
+                            ng-true-value="'isShow'"
+                            ng-false-value="'isHide'"
+                ng-click="toggleShowNotePre()">
+                  <p>日记列表显示预览</p>
+                </ion-toggle>
+                <div class="item item-divider"></div>
+
+            </div>
+            <ion-footer-bar>
+                <div class="row">
+                    <small>Copyright© 2016 玩具车队长裕.All Rights Reserved</small>
+                </div>
+            </ion-footer-bar>
+
+        </ion-content>
+    </ion-view>
+</script>
+
+<!--收藏页面-->
+<script id="favorite.html" type="text/ng-template">
+    <ion-view view-title="收藏">
+        <ion-nav-buttons side="right">
+            <button class="button button-icon" ng-click="toggleSearchTwo()">
+                <i class="icon ion-ios-search"></i>
+            </button>
+        </ion-nav-buttons>
+        <ion-content>
+            <ion-refresher pulling-text="下拉刷新" on-refresh="doRefresh()"></ion-refresher>
+            <ion-list>
+
+                <div class=" item item-input" ng-show="isShownData.showSearchTwo">
+                    <i class="icon ion-ios-search placeholder-icon"></i>
+                    <input type="text" placeholder="搜索 文章内容/标题/日期" ng-model="query">
+
+                </div>
+                <ion-item ng-repeat="favorite in favorites | filter:query" favorite="favorite"
+                          ng-click="toPreviewFavorite(favorite,$index)">
+                    <h2>{{favorite.title}}</h2>
+                    <p>{{favorite.createTime}}</p>
+                    <p ng-show="showNotePreview.showPre=='isShow'">{{favorite.content}}</p>
+                    <ion-option-button class="button button-assertive"ng-click="onFavoriteDelete(favorite)">删除</ion-option-button>
+                </ion-item>
+            </ion-list>
+        </ion-content>
+    </ion-view>
+</script>
+
+<!--登录注册页面-->
+<script id="details.html" type="text/ng-template">
+    <ion-view view-title="登陆" hide-tabs>
+        <ion-content class="padding">
+            <ion-list class="padding">
+                <label class="item item-input">
+                    <span class="input-label">账号:</span>
+
+                    <i class="icon ion-email placeholder-icon"></i>
+                    <input type="text" placeholder="邮箱/手机号">
+                </label>
+                <label class="item item-input">
+                    <span class="input-label">密码:</span>
+
+                    <i class="icon ion-locked placeholder-icon icon-right"></i>
+                    <input type="password" placeholder="密码大于6位">
+                </label>
+                </div>
+
+
+                    <li class="item item-checkbox item-clear">
+                        <label class="checkbox">
+                            <input type="checkbox">
+                        </label>
+                        记住密码
+                    </li>
+                    <button class="button button-block button-{{currentTheme}}">登陆</button>
+
+                <div class="row">
+                    <div class="col-20"><a href="javascript:void(0)">忘记密码</a></div>
+                    <div class="col-20 col-offset-67"><a href="javascript:void(0)">现在注册</a></div>
+                </div>
+
+            </ion-list>
+        </ion-content>
+    </ion-view>
+</script>
+
+<!--新建日记模型-->
+<script id="new-note.html" type="text/ng-template">
+
+    <div class="modal">
+
+        <!-- Modal header bar -->
+        <ion-header-bar class="bar-secondary">
+            <h1 class="title">新的日记</h1>
+            <button class="button button-clear button-positive" ng-click="closeNewNote()">取消</button>
+        </ion-header-bar>
+
+        <!-- Modal content area -->
+        <ion-content>
+
+            <form ng-submit="createNote(note)">
+                <div class="list">
+                    <label class="item item-input">
+                        <input type="text" placeholder="日记标题" ng-model="note.title">
+                    </label>
+                    <label class="item item-divider">
+                        <p>{{nowTime}}</p>
+                    </label>
+                    <label class="item item-input">
+                        <textarea type="text" placeholder="日记内容" ng-model="note.content" rows="15"></textarea>
+                    </label>
+                    <p class="pull-right">字数统计:{{note.content.length}}</p>
+                </div>
+                <div class="padding">
+                    <button type="submit" class="button button-block button-{{currentTheme}}">保存日记</button>
+                </div>
+            </form>
+
+        </ion-content>
+
+    </div>
+
+</script>
+<!--编辑日记模型-->
+<script id="edit-note.html" type="text/ng-template">
+
+    <div class="modal">
+
+        <!-- Modal header bar -->
+        <ion-header-bar class="bar-secondary">
+            <h1 class="title">编辑日记</h1>
+            <button class="button button-clear button-positive" ng-click="closeEditNote()">取消</button>
+        </ion-header-bar>
+
+        <!-- Modal content area -->
+        <ion-content>
+
+            <form ng-submit="saveEditNote()">
+                <div class="list">
+                    <label class="item item-input">
+                        <input type="text" placeholder="日记标题" ng-model="::currentNote.title">
+                    </label>
+                    <label class="item item-divider">
+                        <p>{{nowTime}}</p>
+                    </label>
+                    <label class="item item-input">
+                        <textarea type="text" placeholder="日记内容" ng-model="::currentNote.content" rows="15"></textarea>
+                    </label>
+                    <p class="pull-right">字数统计:{{currentNote.content.length}}</p>
+                </div>
+                <div class="padding">
+                    <button type="submit" class="button button-block button-{{currentTheme}}">保存日记</button>
+                </div>
+            </form>
+
+        </ion-content>
+
+    </div>
+
+</script>
+<!--编辑收藏模型-->
+<script id="edit-favorite.html" type="text/ng-template">
+
+    <div class="modal">
+
+        <!-- Modal header bar -->
+        <ion-header-bar class="bar-secondary">
+            <h1 class="title">编辑日记</h1>
+            <button class="button button-clear button-positive" ng-click="closeEditFavorite()">取消</button>
+        </ion-header-bar>
+
+        <!-- Modal content area -->
+        <ion-content>
+
+            <form ng-submit="saveEditFavorite()">
+                <div class="list">
+                    <label class="item item-input">
+                        <input type="text" placeholder="日记标题" ng-model="::currentFavorite.title">
+                    </label>
+                    <label class="item item-divider">
+                        <p>{{nowTime}}</p>
+                    </label>
+                    <label class="item item-input">
+                        <textarea type="text" placeholder="日记内容" ng-model="::currentFavorite.content" rows="15"></textarea>
+                    </label>
+                    <p class="pull-right">字数统计:{{currentFavorite.content.length}}</p>
+                </div>
+                <div class="padding">
+                    <button type="submit" class="button button-block button-{{currentTheme}}">保存日记</button>
+                </div>
+            </form>
+
+        </ion-content>
+
+    </div>
+
+</script>
+<!--日记详情页面-->
+<script id="previewNote.html" type="text/ng-template">
+    <ion-view view-title="日记详情" hide-tabs>
+        <ion-nav-buttons side="right">
+            <button class="button button-icon ion-android-more-vertical" ng-click="showActionSheet(currentNote)"></button>
+        </ion-nav-buttons>
+        <ion-content class="padding">
+            <div class="card">
+                <div class="item item-divider">
+                  <h2>{{currentNote.title}}</h2><p>创建于:{{currentNote.createTime}}</p>
+                </div>
+                <div class="item item-text-wrap">
+                    <pre>{{currentNote.content}}</pre>
+                </div>
+                <div class="item item-divider">
+                    <p>总字数：{{currentNote.content.length}} 字</p>
+                </div>
+            </div>
+        </ion-content>
+    </ion-view>
+</script>
+<!--收藏的日记详情页面-->
+<script id="previewFavorite.html" type="text/ng-template">
+    <ion-view view-title="日记详情" hide-tabs>
+        <ion-nav-buttons side="right">
+            <button class="button button-icon ion-android-more-vertical" ng-click="showFavoriteActionSheet(currentFavorite)"></button>
+        </ion-nav-buttons>
+        <ion-content class="padding">
+            <div class="card">
+                <div class="item item-divider">
+                    <h2>{{currentFavorite.title}}</h2><p>创建于:{{currentFavorite.createTime}}</p>
+                </div>
+                <div class="item item-text-wrap">
+                    <pre>{{currentFavorite.content}}</pre>
+                </div>
+                <div class="item item-divider">
+                    <p>总字数：{{currentFavorite.content.length}} 字</p>
+                </div>
+            </div>
+        </ion-content>
+    </ion-view>
+</script>
+  <!--使用帮助-->
+<script id="help.html" type="text/ng-template">
+  <ion-view class="padding" title="使用帮助" hide-tabs>
+    <ion-content>
+      <div class="list">
+        <div class="item item-text-wrap">1.日记和收藏列表向左滑动有更多选项</div>
+        <div class="item item-text-wrap">2.下拉刷新</div>
+        <div class="item item-text-wrap">3.创建文件夹可以同名</div>
+        <div class="item item-text-wrap">4.写日记如果取消，退出app之前点击创建日记还可以接着写</div>
+        <div class="item item-text-wrap">5.写日记的时候，请不要返回键退出编辑，可能会返回桌面，请点击右上角的取消</div>
+        <div class="item item-text-wrap">6.点击进入日记，再点右上角可以删除，编辑，分享日记</div>
+        <div class="item item-text-wrap">7.向右滑动打开侧栏菜单，或者点击主页左上角菜单按钮打开</div>
+        <div class="item item-text-wrap">8.云同步功能还没开放哦,后续会有更新.</div>
+      </div>
+    </ion-content>
+  </ion-view>
+</script>
+</body>
+</html>

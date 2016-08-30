@@ -1,4 +1,4 @@
-# happy-notebook
+# 开心云日记
 <h2>一款日记本，用angularJs和ionic制作，可以用Cordova打包为安卓、ios应用。<a href="http://ccyblog-sources.stor.sinaapp.com/ionicNoteBook.apk">点击下载</a>apk文件</h2>
 <p>说明：</p>
 <h2>命令行安装</h2>

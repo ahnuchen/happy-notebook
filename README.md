@@ -1,5 +1,5 @@
 # 开心云日记
-<h2>一款日记本，用angularJs和ionic制作，可以用Cordova打包为安卓、ios应用。<a href="http://ccyhome-apks.stor.sinaapp.com/ionicNoteBook.apk">点击下载</a>apk文件</h2>
+<h2>一款日记本，用angularJs和ionic制作，可以用Cordova打包为安卓、ios应用。<a href="http://ccyapp-sources.stor.sinaapp.com/ionicNoteBook.apk">点击下载</a>apk文件</h2>
 <p>说明：</p>
 <h2>命令行安装</h2>
 <p>
@@ -66,4 +66,4 @@ $ ionic emulate ios
 <br />
 <img src="plugins.png" />
 <hr />
-<a href="http://ccyhome-apks.stor.sinaapp.com/ionicNoteBook.apk">点击下载</a>已经打包完成的apk
+<a href="http://ccyapp-sources.stor.sinaapp.com/ionicNoteBook.apk">点击下载</a>已经打包完成的apk
